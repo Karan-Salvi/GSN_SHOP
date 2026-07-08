@@ -71,7 +71,7 @@ export default function InstallPWA() {
     <>
       <div
         data-testid="pwa-install-banner"
-        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm z-[60] rounded-2xl bg-white shadow-2xl shadow-ocean-500/25 border border-ocean-100 p-4 flex items-start gap-3 animate-fade-up"
+        className="fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[10000] rounded-2xl bg-white shadow-2xl shadow-ocean-500/25 border border-ocean-100 p-4 flex items-start gap-3 animate-fade-up"
       >
         <div className="w-12 h-12 rounded-xl bg-ocean-500 shrink-0 flex items-center justify-center overflow-hidden">
           <img src="/icon-192.png" alt="GSN Fish" className="w-full h-full" />
@@ -113,7 +113,7 @@ export default function InstallPWA() {
       {showIosSheet && (
         <div
           data-testid="pwa-ios-sheet"
-          className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          className="fixed inset-0 z-[10001] bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
           onClick={dismiss}
         >
           <div
