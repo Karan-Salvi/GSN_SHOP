@@ -123,6 +123,16 @@ class FishIn(BaseModel):
     is_special: bool = False
 
 
+class FishPatch(BaseModel):
+    name_en: Optional[str] = None
+    name_mr: Optional[str] = None
+    price_per_kg: Optional[float] = None
+    available: Optional[bool] = None
+    image_base64: Optional[str] = None
+    description: Optional[str] = None
+    is_special: Optional[bool] = None
+
+
 class FishOut(FishIn):
     id: str
     created_at: str
@@ -196,8 +206,9 @@ async def login(body: LoginIn, response: Response):
 
 @api_router.post("/auth/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/")
+    for name in ("access_token", "refresh_token"):
+        response.set_cookie(name, "", httponly=True, secure=False, samesite="lax",
+                            max_age=0, expires=0, path="/")
     return {"ok": True}
 
 
@@ -266,12 +277,15 @@ async def create_fish(body: FishIn, user: dict = Depends(get_current_user)):
 
 
 @api_router.put("/admin/fish/{fish_id}")
-async def update_fish(fish_id: str, body: FishIn, user: dict = Depends(get_current_user)):
+async def update_fish(fish_id: str, body: FishPatch, user: dict = Depends(get_current_user)):
     try:
         oid = ObjectId(fish_id)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid fish id")
-    res = await db.fish.update_one({"_id": oid}, {"$set": body.model_dump()})
+    update = {k: v for k, v in body.model_dump().items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    res = await db.fish.update_one({"_id": oid}, {"$set": update})
     if res.matched_count == 0:
         raise HTTPException(status_code=404, detail="Fish not found")
     doc = await db.fish.find_one({"_id": oid})
