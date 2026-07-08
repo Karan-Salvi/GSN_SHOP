@@ -159,8 +159,9 @@ export default function AdminDashboard() {
                 <Plus className="w-4 h-4" /> Add Fish
               </button>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-              <table className="w-full text-sm">
+            {/* Desktop / tablet — table view */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                   <tr>
                     <th className="text-left px-4 py-3">Image</th>
@@ -195,7 +196,7 @@ export default function AdminDashboard() {
                           {f.available ? "Available" : "Out of Stock"}
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button onClick={() => openEdit(f)} data-testid={`edit-fish-${f.id}`}
                           className="inline-flex items-center gap-1 text-ocean-600 hover:text-ocean-700 text-sm font-semibold px-3 py-1.5 rounded-full">
                           <Pencil className="w-4 h-4" /> Edit
@@ -209,6 +210,47 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile — card view with big touch targets */}
+            <div className="md:hidden space-y-3">
+              {fish.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-slate-200 py-12 text-center text-slate-400 bg-white">
+                  No fish yet. Add your first one.
+                </div>
+              )}
+              {fish.map((f) => (
+                <div key={f.id} data-testid={`admin-fish-card-${f.id}`}
+                  className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center shrink-0">
+                      {f.image_base64 ? (
+                        <img src={f.image_base64.startsWith("data:") ? f.image_base64 : `data:image/jpeg;base64,${f.image_base64}`}
+                          alt={f.name_en} className="w-full h-full object-cover" />
+                      ) : <ImageIcon className="w-5 h-5 text-slate-400" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-slate-900 truncate">{f.name_en}</div>
+                      <div className="mr-text text-ocean-600 truncate">{f.name_mr}</div>
+                      <div className="font-num text-lg text-slate-900 mt-1">₹{Math.round(f.price_per_kg)}<span className="text-xs text-slate-500">/kg</span></div>
+                    </div>
+                    <button onClick={() => toggleAvailable(f)} data-testid={`toggle-avail-${f.id}`}
+                      className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${f.available ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                      {f.available ? "Available" : "Out"}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                    <button onClick={() => openEdit(f)} data-testid={`edit-fish-${f.id}`}
+                      className="inline-flex items-center justify-center gap-2 bg-ocean-50 text-ocean-600 active:bg-ocean-100 font-semibold py-2.5 rounded-xl transition-colors">
+                      <Pencil className="w-4 h-4" /> Edit
+                    </button>
+                    <button onClick={() => onDelete(f.id)} data-testid={`delete-fish-${f.id}`}
+                      className="inline-flex items-center justify-center gap-2 bg-red-50 text-red-600 active:bg-red-100 font-semibold py-2.5 rounded-xl transition-colors">
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         )}
