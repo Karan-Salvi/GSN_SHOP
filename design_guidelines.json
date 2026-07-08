@@ -1,0 +1,128 @@
+{
+  "theme": "Ocean Blue, White, Aqua - Professional Fish Market Style",
+  "app_type": "hybrid_fullstack",
+  "typography": {
+    "primary_font": "Baloo 2",
+    "secondary_font": "Mukta",
+    "number_font": "Khand",
+    "headings": {
+      "family": "'Baloo 2', sans-serif",
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-bold"
+    },
+    "body": {
+      "family": "'Mukta', sans-serif",
+      "size": "text-base lg:text-lg leading-relaxed text-slate-700"
+    },
+    "instructions_to_main_agent": "Ensure fonts are imported via Google Fonts. 'Baloo 2' gives a fresh, slightly rounded friendly look compatible with Devanagari. 'Mukta' handles dense Marathi/English UI text with excellent clarity. 'Khand' for punchy pricing and number displays."
+  },
+  "colors": {
+    "background": {
+      "light": "#F8FAFC",
+      "card": "#FFFFFF",
+      "hero_overlay": "rgba(3, 57, 108, 0.7)"
+    },
+    "primary": {
+      "DEFAULT": "#005B96",
+      "dark": "#03396C",
+      "light": "#6497B1"
+    },
+    "accent": {
+      "aqua": "#00A8E8",
+      "green": "#25D366" 
+    },
+    "text": {
+      "main": "#0F172A",
+      "muted": "#475569",
+      "inverse": "#FFFFFF"
+    },
+    "status": {
+      "open": "#16A34A",
+      "closed": "#DC2626"
+    }
+  },
+  "layouts": {
+    "customer_facing": {
+      "header": "Sticky with Glassmorphism (backdrop-blur-xl bg-white/80 border-b border-slate-200/50). Must include GSN Logo, live date/time, and Open/Close status badge.",
+      "hero": "Full width rounded-b-3xl container. Use ocean wave texture or seafood market image with heavy dark blue gradient overlay to ensure text contrast. Include Welcome message in Marathi & English.",
+      "grid": "Bento-style or neat e-commerce grid for fish cards. grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4. gap-6 lg:gap-8.",
+      "footer": "Deep blue (#03396C) background. py-16. Minimalist links, map integration, and contact info."
+    },
+    "admin_dashboard": {
+      "layout": "Sidebar navigation (left) + Main Content (right) with a strict grid hierarchy.",
+      "cards": "Dense, crisp borders (border-slate-200), flat white background. Avoid heavy shadows here to keep it functional.",
+      "table": "Shadcn UI table style, minimal borders, clear stock toggle buttons."
+    }
+  },
+  "visual_enhancers": {
+    "borders": "Subtle border-slate-200 for normal cards. On hover, change border to border-aqua/50.",
+    "shadows": "Ambient smooth shadows on fish cards: hover:shadow-[0_8px_30px_rgb(0,168,232,0.12)].",
+    "radius": "rounded-2xl for main cards, rounded-full for badges and floating buttons."
+  },
+  "components": {
+    "fish_card": {
+      "description": "Clean white card. Top 50% is the fish image. Bottom 50% contains English + Marathi name, Price/Kg, and Availability badge.",
+      "styling": "bg-white rounded-2xl overflow-hidden border border-slate-100 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl group relative"
+    },
+    "floating_action_buttons": {
+      "description": "Bottom right corner stacked buttons: WhatsApp (Green), Phone (Primary Blue), Map (Aqua). Must have pulsating animation or subtle bounce.",
+      "styling": "fixed bottom-6 right-6 flex flex-col gap-4 z-50"
+    },
+    "status_badge": {
+      "description": "Indicates if shop is OPEN (Green) or CLOSED (Red) today.",
+      "styling": "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider text-white shadow-sm"
+    }
+  },
+  "motion": {
+    "hover": "Scale images slightly on card hover (group-hover:scale-105 transition-transform duration-500).",
+    "entrance": "Staggered fade-in-up for fish cards using Framer Motion.",
+    "buttons": "Active state scale-95. Floating WhatsApp button should have a subtle ping/pulse effect."
+  },
+  "media": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.pexels.com/photos/34155535/pexels-photo-34155535.jpeg",
+        "description": "Mysterious dark ocean surface - great for hero background under text"
+      },
+      {
+        "url": "https://images.pexels.com/photos/3903587/pexels-photo-3903587.jpeg",
+        "description": "Vibrant seafood market stall - use as alternative hero or about section"
+      }
+    ],
+    "fish_placeholders": [
+      {
+        "url": "https://images.pexels.com/photos/19993434/pexels-photo-19993434.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Top view of two fresh raw fish on a white marble surface"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1576330383200-2bf325cfec52?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxyYXclMjB3aG9sZSUyMGZpc2glMjBmcmVzaHxlbnwwfHx8fDE3ODI0MDU4Njd8MA&ixlib=rb-4.1.0&q=85",
+        "description": "gray fishes on ice"
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Ensure white text on primary blue has at least 4.5:1 contrast. Use black/dark-slate for text on white cards.",
+    "testing": "All interactive elements MUST include `data-testid` attribute (e.g., `data-testid=\"buy-whatsapp-btn\"`, `data-testid=\"fish-card-surmai\"`).",
+    "language": "Ensure proper lang tags and semantic HTML for screen readers reading Marathi."
+  },
+  "instructions_to_main_agent": [
+    "Use Lucide React for icons (e.g., Phone, MessageCircle/WhatsApp, MapPin, Clock, Fish).",
+    "Implement the customer site and admin dashboard in the same application using React Router.",
+    "Ensure the hero section overlay (bg-black/40 or bg-[#03396C]/70) makes the white Marathi/English welcome text pop.",
+    "Do not use generic 'Inter'. Import 'Baloo 2', 'Mukta', and 'Khand' from Google Fonts and apply them via Tailwind config.",
+    "Use standard Tailwind CSS classes. No custom CSS unless absolutely necessary.",
+    "Build Shadcn-compatible components but style them according to these guidelines (e.g., remove excessive borders, add soft rounded corners)."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts. Create depth through layered design elements.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) for the header and floating menus.",
+    "You MUST NOT apply universal transition (e.g., `transition: all`). Always add transitions for specific properties.",
+    "You MUST NOT center align the app container. Let the layout breathe naturally.",
+    "NEVER use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 for icons.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "All interactive and key informational elements MUST include a `data-testid` attribute."
+  ]
+}
