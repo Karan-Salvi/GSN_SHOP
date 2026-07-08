@@ -1,0 +1,20 @@
+{
+  "name": "GSN Fresh Fish Service",
+  "short_name": "GSN Fish",
+  "description": "Fresh fish, straight from the coast. आजचे मासे, दर आणि उपलब्धता एका ठिकाणी.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#005B96",
+  "lang": "mr-IN",
+  "categories": ["food", "shopping", "business"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

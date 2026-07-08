@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Rounded square background -->
+  <defs>
+    <linearGradient id="oceanBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#005B96"/>
+      <stop offset="1" stop-color="#03396C"/>
+    </linearGradient>
+    <linearGradient id="scale" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#e6f7ff"/>
+      <stop offset="1" stop-color="#B2E0DE"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="url(#oceanBg)"/>
+
+  <!-- subtle wave lines -->
+  <path d="M40 430 Q 130 400 220 430 T 400 430 T 580 430" stroke="#00A8E8" stroke-opacity="0.35" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M20 460 Q 120 435 220 460 T 420 460 T 620 460" stroke="#00A8E8" stroke-opacity="0.22" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+  <!-- Fish body -->
+  <g transform="translate(256 256)">
+    <!-- Tail -->
+    <path d="M 130 0 L 210 -70 L 195 0 L 210 70 Z" fill="#00A8E8"/>
+    <!-- Body -->
+    <path d="M -160 0
+             C -160 -95 -30 -125 60 -95
+             C 100 -80 130 -50 145 0
+             C 130 50 100 80 60 95
+             C -30 125 -160 95 -160 0 Z"
+          fill="url(#scale)" stroke="#03396C" stroke-width="6"/>
+    <!-- Top fin -->
+    <path d="M -20 -95 L 20 -160 L 60 -95 Z" fill="#00A8E8" stroke="#03396C" stroke-width="4"/>
+    <!-- Bottom fin -->
+    <path d="M -20 95 L 20 160 L 60 95 Z" fill="#00A8E8" stroke="#03396C" stroke-width="4"/>
+    <!-- Side fin -->
+    <path d="M -30 20 L -80 65 L -20 60 Z" fill="#4FC3F7" stroke="#03396C" stroke-width="3"/>
+    <!-- Gill line -->
+    <path d="M -80 -50 Q -95 0 -80 50" stroke="#03396C" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Eye -->
+    <circle cx="-115" cy="-25" r="16" fill="#ffffff"/>
+    <circle cx="-115" cy="-25" r="9" fill="#0F172A"/>
+    <circle cx="-111" cy="-29" r="3" fill="#ffffff"/>
+  </g>
+</svg>

@@ -6,6 +6,7 @@ import FishGrid from "@/components/FishGrid";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import FloatingButtons from "@/components/FloatingButtons";
+import InstallPWA from "@/components/InstallPWA";
 
 export default function Home() {
   const [fish, setFish] = useState([]);
@@ -48,6 +49,7 @@ export default function Home() {
       <ContactSection settings={settings} />
       <Footer settings={settings} />
       <FloatingButtons settings={settings} />
+      <InstallPWA />
     </div>
   );
 }
