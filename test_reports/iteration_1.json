@@ -1,0 +1,42 @@
+{
+  "summary": "First end-to-end run of GSN Fresh Fish. Public GET endpoints, auth (login success/fail, /auth/me), admin CRUD, shop-status toggle, and full frontend E2E (homepage, admin login, add fish, toggle shop, logout) all working. Two backend concerns identified: (1) POST /api/auth/logout only clears refresh_token cookie; access_token remains valid so /api/auth/me continues to return 200 until expiry. (2) PUT /api/admin/fish/{id} rejects partial updates with 422 (requires full payload including name_en, name_mr). Both are backend behavior issues; frontend dashboard flow still works because it likely sends full payloads and cleans state on logout via client-side redirect.",
+  "tested_scope": ["frontend", "backend", "auth", "integration"],
+  "passed": [
+    "GET /api/fish returns 6 seeded fish with all required fields (id, name_en, name_mr, price_per_kg, available)",
+    "GET /api/shop-status returns {is_open:true, notice}",
+    "GET /api/settings returns owner_name, mobile, whatsapp, address, google_maps_url, business_hours",
+    "POST /api/auth/login (correct creds) returns user + sets access_token & refresh_token httpOnly cookies",
+    "POST /api/auth/login (wrong password) returns 401",
+    "GET /api/auth/me with cookie -> 200 user object; without cookie -> 401",
+    "POST /api/admin/fish, PUT /api/admin/fish/{id}, DELETE /api/admin/fish/{id}, PUT /api/admin/shop-status, PUT /api/admin/settings all return 401 without auth",
+    "POST /api/admin/fish (authed) creates fish; DELETE removes; changes reflected in public GET /api/fish (count 6->7->6)",
+    "PUT /api/admin/shop-status flips is_open; public endpoint reflects change; restored to true",
+    "Frontend homepage: shop-status-badge shows 'OPEN · सुरू', 6 fish cards, fab-whatsapp/call/maps all visible",
+    "Header 'Admin' link navigates to /admin login page",
+    "Login with admin@gsnfish.com / Admin@123 redirects to /admin/dashboard",
+    "Add Fish flow: dashboard 'Add Fish' opens modal, fields filled, new row appears in table",
+    "Toggle shop status in dashboard flips OPEN -> CLOSED and back to OPEN",
+    "Logout button returns to /admin login page"
+  ],
+  "failed": [
+    {
+      "area": "backend/auth",
+      "issue": "POST /api/auth/logout does not clear access_token cookie. Only refresh_token cookie is removed. Session remains valid for /api/auth/me and admin endpoints until access token expires.",
+      "evidence": "After curl POST /api/auth/logout with valid cookie jar (returns 200 {ok:true}), only refresh_token was removed from jar; access_token cookie persisted and subsequent GET /api/auth/me returned 200 with admin user.",
+      "priority": "HIGH"
+    },
+    {
+      "area": "backend/admin fish",
+      "issue": "PUT /api/admin/fish/{id} rejects partial updates. Endpoint uses non-optional Pydantic fields (name_en, name_mr) so a partial body like {\"price_per_kg\": 599} returns 422. Full payload works. Consider using a partial/Optional update schema for PUT (PATCH-like semantics).",
+      "evidence": "PUT with {price_per_kg:200} -> 422 with pydantic 'Field required' for name_en, name_mr. PUT with full body {name_en,name_mr,price_per_kg,available} -> 200.",
+      "priority": "MEDIUM"
+    }
+  ],
+  "action_items": [
+    "In backend /api/auth/logout: also delete/expire the 'access_token' cookie (response.delete_cookie('access_token', path='/', ...)) alongside refresh_token.",
+    "Change PUT /api/admin/fish/{id} to accept an Optional/partial update model (all fields Optional) so partial updates like price-only work, or document/enforce that clients must send full payload."
+  ],
+  "success_rate": {"backend": "90%", "frontend": "100%"},
+  "retest_needed": true,
+  "full_testing_deferred": true
+}
