@@ -106,6 +106,12 @@ class LoginIn(BaseModel):
     password: str
 
 
+class ChangeCredsIn(BaseModel):
+    current_password: str
+    new_email: Optional[EmailStr] = None
+    new_password: Optional[str] = None
+
+
 class UserOut(BaseModel):
     id: str
     email: EmailStr
@@ -237,6 +243,43 @@ async def refresh_token(request: Request, response: Response):
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 
+@api_router.post("/auth/change-credentials")
+async def change_credentials(body: ChangeCredsIn, response: Response, user: dict = Depends(get_current_user)):
+    # Load the full user (with password_hash) for verification
+    full = await db.users.find_one({"_id": ObjectId(user["_id"])})
+    if not full or not verify_password(body.current_password, full["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    update: dict = {"password_source": "manual"}
+
+    new_email = (body.new_email or "").strip().lower()
+    if new_email and new_email != full["email"]:
+        clash = await db.users.find_one({"email": new_email, "_id": {"$ne": full["_id"]}})
+        if clash:
+            raise HTTPException(status_code=400, detail="This email is already taken")
+        update["email"] = new_email
+
+    if body.new_password:
+        if len(body.new_password) < 6:
+            raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+        update["password_hash"] = hash_password(body.new_password)
+
+    if len(update) == 1:  # only password_source, nothing else changed
+        raise HTTPException(status_code=400, detail="Nothing to update")
+
+    await db.users.update_one({"_id": full["_id"]}, {"$set": update})
+
+    # Refresh session cookies so the user stays signed in
+    new_uid = str(full["_id"])
+    email_out = update.get("email", full["email"])
+    access = create_access_token(new_uid, email_out)
+    refresh = create_refresh_token(new_uid)
+    set_auth_cookies(response, access, refresh)
+
+    return {"id": new_uid, "email": email_out, "name": full.get("name", "Admin"),
+            "role": full.get("role", "admin")}
+
+
 # --- Public routes ---
 @api_router.get("/")
 async def root():
@@ -326,23 +369,25 @@ async def update_settings(body: SettingsIn, user: dict = Depends(get_current_use
 # --- Startup ---
 @app.on_event("startup")
 async def startup_event():
-    # Seed admin
+    # Seed admin (only creates the initial admin; never overwrites a manually-changed password)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@gsnfish.com").lower()
     admin_password = os.environ.get("ADMIN_PASSWORD", "Admin@123")
-    existing = await db.users.find_one({"email": admin_email})
+    existing = await db.users.find_one({"role": "admin"})
     if not existing:
         await db.users.insert_one({
             "email": admin_email,
             "password_hash": hash_password(admin_password),
             "name": "GSN Admin",
             "role": "admin",
+            "password_source": "env",
             "created_at": datetime.now(timezone.utc).isoformat(),
         })
         logger.info(f"Seeded admin user: {admin_email}")
-    elif not verify_password(admin_password, existing["password_hash"]):
+    elif existing.get("password_source") != "manual" and not verify_password(admin_password, existing["password_hash"]):
+        # Only re-hash from env if the owner has never manually changed the password
         await db.users.update_one(
-            {"email": admin_email},
-            {"$set": {"password_hash": hash_password(admin_password)}},
+            {"_id": existing["_id"]},
+            {"$set": {"password_hash": hash_password(admin_password), "email": admin_email, "password_source": "env"}},
         )
         logger.info("Admin password re-hashed from env")
 

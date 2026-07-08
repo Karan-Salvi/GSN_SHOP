@@ -1,0 +1,52 @@
+{
+  "summary": "Tested the new Change-Admin-Login feature (POST /api/auth/change-credentials + Settings-tab UI). Backend: 9/9 pytest cases PASS (auth-guard, wrong current password, empty payload, password happy path with round-trip, email happy path with round-trip, seed_admin respects password_source='manual' across a supervisor backend restart, and short-password rejection). Frontend: found and fixed a CRITICAL runtime crash on the Settings tab caused by undeclared state (`creds`, `setCreds`, `credsSaving`, `emptyCreds`, `refreshAuth`). After the fix the full E2E flow works: login -> Settings -> card visible with all data-testids -> filling new_password reveals confirm field -> Update Login -> toast success -> logout -> login with new password succeeds -> restore back to Admin@123. Credentials confirmed restored.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "AdminDashboard.jsx (Settings tab -> Change Admin Login card)",
+        "issue": "FIXED BY TESTER. Component referenced `creds`, `setCreds`, `credsSaving`, `setCredsSaving`, `emptyCreds`, and `refreshAuth` without declaring them. Clicking the Settings tab produced 'ReferenceError: creds is not defined' and the entire dashboard crashed to the runtime-error overlay. Fix applied: added `const emptyCreds = {...}` at module scope; added `useState(emptyCreds)` and `useState(false)` hooks; destructured `refresh: refreshAuth` from `useAuth()`.",
+        "selector": "[data-testid=\"tab-settings\"] -> Change Admin Login card",
+        "priority": "CRITICAL (was blocking the entire feature; now resolved)"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Admin dashboard (any tab)",
+        "issues": [
+          "Recurring React dev warning: 'Cannot update a component (BrowserRouter) while rendering a different component (AdminLogin)'. Same warning was noted in iteration_2 -- still not fixed. Non-blocking, but points to a setState/navigate that should be moved inside useEffect in AdminLogin.jsx."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_change_credentials.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Review the AdminDashboard.jsx fix I applied (declaration of `emptyCreds`, `creds`/`setCreds`, `credsSaving`/`setCredsSaving`, and `refresh: refreshAuth` from useAuth). The main agent should decide whether to keep this shape or move the credentials card into a smaller sub-component -- AdminDashboard.jsx is now ~475 lines and continuing to grow past the maintainability threshold.",
+    "Fix the long-standing 'setState during render' warning in AdminLogin.jsx (unchanged from iteration_2)."
+  ],
+  "critical_code_review_comments": [
+    "AdminDashboard.jsx grew to ~475 lines and now handles fish CRUD + notice + settings + change-credentials in one file. Split the 'Change Admin Login' card into its own component (e.g. `ChangeCredentialsCard`) for testability and to stay under the 700-line soft limit.",
+    "backend/server.py `change_credentials` correctly rejects an empty update via `if len(update) == 1`. That relies on `password_source` always being present in the update dict -- it's fine today but is a subtle coupling; a clearer guard would be `if not update_touched_email and not new_password_provided`.",
+    "backend/server.py sets `secure=False` on the auth cookies. Preview URL is HTTPS -- this works because the cookie is not marked Secure, but in production it should be `secure=True` and driven by an env flag. Also, `samesite='lax'` combined with cross-site requests (frontend and backend on same emergent domain today) works, but revisit if the domains diverge.",
+    "`change-credentials` re-issues fresh JWT cookies (good) but the frontend still calls `refreshAuth()` (i.e. GET /auth/me) afterward -- one extra round-trip. Not a bug, just an observation.",
+    "There is no rate-limit / lockout for /auth/login or /auth/change-credentials. Auth playbook checklist mentions brute-force lockout after 5 fails -- currently absent."
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/AdminDashboard.jsx (added missing state hooks, emptyCreds const, destructured refresh from useAuth as refreshAuth)",
+    "/app/backend/tests/test_change_credentials.py (new pytest suite, 9 tests)"
+  ],
+  "success_rate": {"backend": "100% (9/9)", "frontend": "100% (7/7 assertions after fix)"},
+  "test_credentials": "admin@gsnfish.com / Admin@123 -- confirmed restored after all mutation tests (both pytest and Playwright cleanup steps).",
+  "seed_data_creation": "No new seed data created. Password/email were temporarily rotated during tests (Admin@456, admin_alt@gsnfish.com, Admin@789) and reverted to originals.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The change-credentials feature is fully functional end-to-end after my fix to AdminDashboard.jsx. The seed_admin logic in backend/server.py correctly preserves manually-changed passwords across restarts (verified). Test suite lives at /app/backend/tests/test_change_credentials.py -- includes a supervisor backend restart step (test_password_source_manual_survives_restart) that takes ~10-15s. Credentials in /app/memory/test_credentials.md remain valid (admin@gsnfish.com / Admin@123).",
+  "rca of the issue": "The Change-Admin-Login card was implemented in AdminDashboard.jsx but the required React state (`creds`, `setCreds`, `credsSaving`, `setCredsSaving`), the initial-value const `emptyCreds`, and `refreshAuth` (which should be aliased from `refresh` on the AuthContext) were never declared. Because JSX in the settings tab references `creds.current_password`, React threw `ReferenceError: creds is not defined` the moment the user opened the Settings tab, tearing down the entire dashboard. Reproduction: login to /admin, click Settings -> runtime error overlay. Fix (applied by tester): declared `emptyCreds` const, added `useState(emptyCreds)` and `useState(false)` hooks, and destructured `{ refresh: refreshAuth }` from `useAuth()`. Verified via full E2E round-trip (login -> change password to Admin@456 -> logout -> login with Admin@456 -> change back to Admin@123)."
+}

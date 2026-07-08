@@ -4,14 +4,15 @@ import { api, formatApiErrorDetail } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import {
   Fish, LogOut, Plus, Pencil, Trash2, Upload, Save, X,
-  Power, PowerOff, ImageIcon, Loader2, Settings as SettingsIcon,
+  Power, PowerOff, ImageIcon, Loader2, Settings as SettingsIcon, KeyRound,
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
 const empty = { name_en: "", name_mr: "", price_per_kg: 0, available: true, is_special: false, description: "", image_base64: "" };
+const emptyCreds = { current_password: "", new_email: "", new_password: "", confirm_password: "" };
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, refresh: refreshAuth } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState("fish");
 
@@ -21,6 +22,8 @@ export default function AdminDashboard() {
   const [editing, setEditing] = useState(null); // fish being edited or null
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [creds, setCreds] = useState(emptyCreds);
+  const [credsSaving, setCredsSaving] = useState(false);
 
   useEffect(() => {
     if (user === false) navigate("/admin", { replace: true });
@@ -99,6 +102,27 @@ export default function AdminDashboard() {
       const { data } = await api.put("/admin/settings", settings);
       setSettings(data); toast.success("Settings saved");
     } catch { toast.error("Failed to save"); }
+  };
+
+  const changeCredentials = async (e) => {
+    e.preventDefault();
+    if (!creds.current_password) { toast.error("Enter current password"); return; }
+    if (!creds.new_email && !creds.new_password) { toast.error("Enter a new email or new password"); return; }
+    if (creds.new_password && creds.new_password !== creds.confirm_password) {
+      toast.error("New password and confirmation do not match"); return;
+    }
+    setCredsSaving(true);
+    try {
+      const payload = { current_password: creds.current_password };
+      if (creds.new_email) payload.new_email = creds.new_email.trim().toLowerCase();
+      if (creds.new_password) payload.new_password = creds.new_password;
+      await api.post("/auth/change-credentials", payload);
+      await refreshAuth();
+      setCreds(emptyCreds);
+      toast.success("Login credentials updated");
+    } catch (err) {
+      toast.error(formatApiErrorDetail(err.response?.data?.detail) || err.message);
+    } finally { setCredsSaving(false); }
   };
 
   const onImageFile = async (e) => {
@@ -297,6 +321,77 @@ export default function AdminDashboard() {
                 className="inline-flex items-center gap-2 bg-ocean-500 hover:bg-ocean-600 text-white font-semibold px-5 py-2.5 rounded-full transition-colors">
                 <Save className="w-4 h-4" /> Save Settings
               </button>
+            </div>
+
+            {/* Change admin credentials */}
+            <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="font-display text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-ocean-500" /> Change Admin Login
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Update your admin email and/or password. You&apos;ll stay signed in after saving.
+              </p>
+              <p className="text-xs text-slate-500 mt-1">
+                सध्याचा पासवर्ड टाका आणि नवीन ईमेल किंवा नवीन पासवर्ड सेट करा.
+              </p>
+
+              <form onSubmit={changeCredentials} className="mt-5 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Current Password <span className="text-red-500">*</span>
+                  </label>
+                  <input type="password" value={creds.current_password}
+                    onChange={(e) => setCreds({ ...creds, current_password: e.target.value })}
+                    data-testid="creds-current-password" required autoComplete="current-password"
+                    className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white" />
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      New Email <span className="text-slate-400 font-normal normal-case">(optional)</span>
+                    </label>
+                    <input type="email" value={creds.new_email}
+                      onChange={(e) => setCreds({ ...creds, new_email: e.target.value })}
+                      placeholder={user?.email || ""}
+                      data-testid="creds-new-email" autoComplete="email"
+                      className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      New Password <span className="text-slate-400 font-normal normal-case">(optional, ≥ 6 chars)</span>
+                    </label>
+                    <input type="password" value={creds.new_password}
+                      onChange={(e) => setCreds({ ...creds, new_password: e.target.value })}
+                      data-testid="creds-new-password" autoComplete="new-password"
+                      className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white" />
+                  </div>
+                </div>
+
+                {creds.new_password ? (
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Confirm New Password <span className="text-red-500">*</span>
+                    </label>
+                    <input type="password" value={creds.confirm_password}
+                      onChange={(e) => setCreds({ ...creds, confirm_password: e.target.value })}
+                      data-testid="creds-confirm-password" autoComplete="new-password"
+                      className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white" />
+                  </div>
+                ) : null}
+
+                <div className="pt-1">
+                  <button type="submit" disabled={credsSaving}
+                    data-testid="creds-save"
+                    className="inline-flex items-center gap-2 bg-ocean-500 hover:bg-ocean-600 disabled:opacity-70 text-white font-semibold px-5 py-2.5 rounded-full transition-colors">
+                    {credsSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                    Update Login
+                  </button>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Currently signed in as <span className="font-semibold text-slate-600">{user?.email}</span>.
+                </p>
+              </form>
             </div>
           </div>
         )}
