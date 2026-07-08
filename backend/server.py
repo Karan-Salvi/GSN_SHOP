@@ -159,6 +159,7 @@ class SettingsIn(BaseModel):
     business_hours: Optional[str] = None
     facebook_url: Optional[str] = None
     instagram_url: Optional[str] = None
+    hero_image: Optional[str] = None
 
 
 # --- Fish helpers ---
@@ -187,6 +188,7 @@ DEFAULT_SETTINGS = {
     "business_hours": "सोम - रवि: सकाळी ६:०० - रात्री ९:०० | Mon-Sun: 6:00 AM - 9:00 PM",
     "facebook_url": "",
     "instagram_url": "",
+    "hero_image": "https://images.pexels.com/photos/3903587/pexels-photo-3903587.jpeg",
 }
 
 DEFAULT_SHOP_STATUS = {
@@ -394,6 +396,12 @@ async def startup_event():
     # Seed default settings & shop status
     if not await db.shop_meta.find_one({"_id": "settings"}):
         await db.shop_meta.insert_one(DEFAULT_SETTINGS)
+    else:
+        # Backfill any missing default keys (e.g. new hero_image field) on existing settings docs.
+        current = await db.shop_meta.find_one({"_id": "settings"})
+        backfill = {k: v for k, v in DEFAULT_SETTINGS.items() if k != "_id" and k not in current}
+        if backfill:
+            await db.shop_meta.update_one({"_id": "settings"}, {"$set": backfill})
     if not await db.shop_meta.find_one({"_id": "shop_status"}):
         await db.shop_meta.insert_one(DEFAULT_SHOP_STATUS)
 

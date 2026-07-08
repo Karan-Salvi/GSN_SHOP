@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 
-const HERO_BG = "https://images.pexels.com/photos/3903587/pexels-photo-3903587.jpeg";
+const HERO_BG_FALLBACK = "https://images.pexels.com/photos/3903587/pexels-photo-3903587.jpeg";
 
-export default function Hero({ shopStatus }) {
+export default function Hero({ shopStatus, settings }) {
+  const heroBg = settings?.hero_image || HERO_BG_FALLBACK;
   const [now, setNow] = useState(new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -20,7 +21,7 @@ export default function Hero({ shopStatus }) {
     >
       <div
         className="absolute inset-0 bg-cover bg-center scale-105"
-        style={{ backgroundImage: `url(${HERO_BG})` }}
+        style={{ backgroundImage: `url(${heroBg})` }}
         aria-hidden="true"
       />
       <div className="absolute inset-0 hero-overlay" aria-hidden="true" />

@@ -44,7 +44,7 @@ export default function Home() {
   return (
     <div data-testid="home-page" className="ocean-grid-bg min-h-screen">
       <Header shopStatus={status} />
-      <Hero shopStatus={status} />
+      <Hero shopStatus={status} settings={settings} />
       <FishGrid fish={fish} loading={loading} />
       <ContactSection settings={settings} />
       <Footer settings={settings} />

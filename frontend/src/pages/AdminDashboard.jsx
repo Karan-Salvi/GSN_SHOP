@@ -298,6 +298,75 @@ export default function AdminDashboard() {
             <h1 className="font-display text-2xl font-extrabold text-slate-900 mb-4 flex items-center gap-2">
               <SettingsIcon className="w-5 h-5" /> Contact & Shop Settings
             </h1>
+
+            {/* Hero banner image */}
+            <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Home page banner image · मुख्य पानाचा फोटो
+              </label>
+              <p className="text-xs text-slate-500 mt-1">
+                Upload a photo (max 800 KB) or paste an image URL. Shown behind the welcome text on the homepage.
+              </p>
+
+              <div className="mt-3 aspect-[16/6] rounded-xl overflow-hidden bg-slate-100 border border-slate-100 relative">
+                {settings.hero_image ? (
+                  <img
+                    src={settings.hero_image}
+                    alt="Hero preview"
+                    data-testid="hero-image-preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.opacity = "0.3"; }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm">No banner set</div>
+                )}
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <label className="inline-flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-full transition-colors">
+                  <Upload className="w-4 h-4" /> Upload image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    data-testid="settings-hero-upload"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (!f) return;
+                      if (f.size > 800 * 1024) { toast.error("Image must be under 800 KB"); return; }
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setSettings((s) => ({ ...s, hero_image: String(ev.target.result) }));
+                      reader.readAsDataURL(f);
+                    }}
+                  />
+                </label>
+                {settings.hero_image ? (
+                  <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, hero_image: "" })}
+                    data-testid="settings-hero-clear"
+                    className="text-red-600 hover:text-red-700 text-sm font-semibold px-3 py-2 rounded-full transition-colors"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="mt-4">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Or paste an image URL
+                </label>
+                <input
+                  type="url"
+                  value={settings.hero_image && !settings.hero_image.startsWith("data:") ? settings.hero_image : ""}
+                  onChange={(e) => setSettings({ ...settings, hero_image: e.target.value })}
+                  placeholder="https://..."
+                  data-testid="settings-hero-url"
+                  className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white"
+                />
+              </div>
+            </div>
+
             <div className="space-y-4">
               {[
                 ["owner_name", "Owner Name"],
