@@ -147,6 +147,8 @@ class FishOut(FishIn):
 class ShopStatusIn(BaseModel):
     is_open: bool
     notice: Optional[str] = ""
+    hero_title_mr: Optional[str] = None
+    hero_title_en: Optional[str] = None
 
 
 class SettingsIn(BaseModel):
@@ -195,6 +197,8 @@ DEFAULT_SHOP_STATUS = {
     "_id": "shop_status",
     "is_open": True,
     "notice": "आजचे ताजे मासे उपलब्ध आहेत! Fresh Fish Arrived Today",
+    "hero_title_mr": "ताजे मासे, थेट समुद्रातून",
+    "hero_title_en": "Fresh Fish, Straight from the Coast",
 }
 
 
@@ -299,7 +303,12 @@ async def get_shop_status():
     doc = await db.shop_meta.find_one({"_id": "shop_status"})
     if not doc:
         doc = DEFAULT_SHOP_STATUS
-    return {"is_open": doc.get("is_open", True), "notice": doc.get("notice", "")}
+    return {
+        "is_open": doc.get("is_open", True),
+        "notice": doc.get("notice", ""),
+        "hero_title_mr": doc.get("hero_title_mr", DEFAULT_SHOP_STATUS["hero_title_mr"]),
+        "hero_title_en": doc.get("hero_title_en", DEFAULT_SHOP_STATUS["hero_title_en"]),
+    }
 
 
 @api_router.get("/settings")
@@ -351,12 +360,19 @@ async def delete_fish(fish_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.put("/admin/shop-status")
 async def update_shop_status(body: ShopStatusIn, user: dict = Depends(get_current_user)):
-    await db.shop_meta.update_one(
-        {"_id": "shop_status"},
-        {"$set": {"is_open": body.is_open, "notice": body.notice or ""}},
-        upsert=True,
-    )
-    return {"is_open": body.is_open, "notice": body.notice or ""}
+    update = {"is_open": body.is_open, "notice": body.notice or ""}
+    if body.hero_title_mr is not None:
+        update["hero_title_mr"] = body.hero_title_mr
+    if body.hero_title_en is not None:
+        update["hero_title_en"] = body.hero_title_en
+    await db.shop_meta.update_one({"_id": "shop_status"}, {"$set": update}, upsert=True)
+    doc = await db.shop_meta.find_one({"_id": "shop_status"}) or {}
+    return {
+        "is_open": doc.get("is_open", True),
+        "notice": doc.get("notice", ""),
+        "hero_title_mr": doc.get("hero_title_mr", DEFAULT_SHOP_STATUS["hero_title_mr"]),
+        "hero_title_en": doc.get("hero_title_en", DEFAULT_SHOP_STATUS["hero_title_en"]),
+    }
 
 
 @api_router.put("/admin/settings")
@@ -404,6 +420,11 @@ async def startup_event():
             await db.shop_meta.update_one({"_id": "settings"}, {"$set": backfill})
     if not await db.shop_meta.find_one({"_id": "shop_status"}):
         await db.shop_meta.insert_one(DEFAULT_SHOP_STATUS)
+    else:
+        current_status = await db.shop_meta.find_one({"_id": "shop_status"})
+        status_backfill = {k: v for k, v in DEFAULT_SHOP_STATUS.items() if k != "_id" and k not in current_status}
+        if status_backfill:
+            await db.shop_meta.update_one({"_id": "shop_status"}, {"$set": status_backfill})
 
     # Seed sample fish if empty
     if await db.fish.count_documents({}) == 0:

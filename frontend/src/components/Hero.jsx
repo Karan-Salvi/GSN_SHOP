@@ -38,8 +38,8 @@ export default function Hero({ shopStatus, settings }) {
           ) : null}
 
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.05] text-balance">
-            <span className="block mr-text">ताजे मासे, थेट समुद्रातून</span>
-            <span className="block text-aqua mt-2">Fresh Fish, Straight from the Coast</span>
+            <span className="block mr-text">{shopStatus?.hero_title_mr || "ताजे मासे, थेट समुद्रातून"}</span>
+            <span className="block text-aqua mt-2">{shopStatus?.hero_title_en || "Fresh Fish, Straight from the Coast"}</span>
           </h1>
 
           <p className="mt-6 text-white/85 text-base sm:text-lg max-w-2xl leading-relaxed">

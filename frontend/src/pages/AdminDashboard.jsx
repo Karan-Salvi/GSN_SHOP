@@ -84,7 +84,12 @@ export default function AdminDashboard() {
   const toggleShop = async () => {
     try {
       const next = !status.is_open;
-      const { data } = await api.put("/admin/shop-status", { is_open: next, notice: status.notice });
+      const { data } = await api.put("/admin/shop-status", {
+        is_open: next,
+        notice: status.notice,
+        hero_title_mr: status.hero_title_mr,
+        hero_title_en: status.hero_title_en,
+      });
       setStatus(data);
       toast.success(next ? "Shop marked OPEN" : "Shop marked CLOSED");
     } catch (err) { toast.error("Failed to update"); }
@@ -92,8 +97,13 @@ export default function AdminDashboard() {
 
   const updateNotice = async () => {
     try {
-      const { data } = await api.put("/admin/shop-status", { is_open: status.is_open, notice: status.notice });
-      setStatus(data); toast.success("Notice updated");
+      const { data } = await api.put("/admin/shop-status", {
+        is_open: status.is_open,
+        notice: status.notice,
+        hero_title_mr: status.hero_title_mr,
+        hero_title_en: status.hero_title_en,
+      });
+      setStatus(data); toast.success("Saved");
     } catch { toast.error("Failed"); }
   };
 
@@ -280,15 +290,59 @@ export default function AdminDashboard() {
         )}
 
         {tab === "notice" && (
-          <div className="max-w-2xl">
-            <h1 className="font-display text-2xl font-extrabold text-slate-900 mb-4">Shop Notice</h1>
-            <p className="text-sm text-slate-500 mb-4">This shows as a banner on the homepage hero (e.g. &quot;Fresh Fish Arrived Today&quot;).</p>
-            <textarea rows={3} value={status.notice || ""} onChange={(e) => setStatus({ ...status, notice: e.target.value })}
-              data-testid="admin-notice-input"
-              className="w-full rounded-xl border border-slate-200 p-4 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none" />
+          <div className="max-w-2xl space-y-6">
+            <div>
+              <h1 className="font-display text-2xl font-extrabold text-slate-900 mb-4">Shop Notice</h1>
+              <p className="text-sm text-slate-500 mb-4">This shows as a small banner on the homepage hero (e.g. &quot;Fresh Fish Arrived Today&quot;).</p>
+              <textarea rows={3} value={status.notice || ""} onChange={(e) => setStatus({ ...status, notice: e.target.value })}
+                data-testid="admin-notice-input"
+                className="w-full rounded-xl border border-slate-200 p-4 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none" />
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <h2 className="font-display text-lg font-extrabold text-slate-900">Homepage Heading · मुख्य शीर्षक</h2>
+              <p className="text-xs text-slate-500 mt-1">The large text that appears over the hero banner.</p>
+
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Marathi heading · मराठी शीर्षक
+                  </label>
+                  <input
+                    value={status.hero_title_mr || ""}
+                    onChange={(e) => setStatus({ ...status, hero_title_mr: e.target.value })}
+                    placeholder="ताजे मासे, थेट समुद्रातून"
+                    data-testid="admin-hero-title-mr"
+                    className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white mr-text"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    English heading
+                  </label>
+                  <input
+                    value={status.hero_title_en || ""}
+                    onChange={(e) => setStatus({ ...status, hero_title_en: e.target.value })}
+                    placeholder="Fresh Fish, Straight from the Coast"
+                    data-testid="admin-hero-title-en"
+                    className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5 bg-white"
+                  />
+                </div>
+
+                {/* Live preview */}
+                <div className="rounded-xl bg-ocean-600 p-6 mt-2">
+                  <div className="text-[10px] uppercase tracking-widest text-white/50 mb-2">Preview</div>
+                  <div className="font-display text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                    <span className="block mr-text">{status.hero_title_mr || "ताजे मासे, थेट समुद्रातून"}</span>
+                    <span className="block text-aqua mt-1">{status.hero_title_en || "Fresh Fish, Straight from the Coast"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <button onClick={updateNotice} data-testid="admin-notice-save"
-              className="mt-3 inline-flex items-center gap-2 bg-ocean-500 hover:bg-ocean-600 text-white font-semibold px-5 py-2.5 rounded-full transition-colors">
-              <Save className="w-4 h-4" /> Save Notice
+              className="inline-flex items-center gap-2 bg-ocean-500 hover:bg-ocean-600 text-white font-semibold px-5 py-2.5 rounded-full transition-colors">
+              <Save className="w-4 h-4" /> Save Notice & Heading
             </button>
           </div>
         )}
