@@ -15,11 +15,17 @@ const queryClient = new QueryClient({
 
 // Register service worker for PWA install (production-ready path).
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").catch((err) => {
-      console.warn("SW registration failed:", err);
+  if (process.env.NODE_ENV === "production") {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/service-worker.js").catch((err) => {
+        console.warn("SW registration failed:", err);
+      });
     });
-  });
+  } else {
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
+    });
+  }
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

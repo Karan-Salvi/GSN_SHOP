@@ -73,7 +73,7 @@ export default function ContactSection({ settings }) {
           <iframe
             title="Shop Location"
             data-testid="contact-map-iframe"
-            src={s.google_maps_embed || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241317.11609823277!2d72.71637099863283!3d19.08251820777361!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sMumbai%20fish%20market!5e0!3m2!1sen!2sin!4v1700000000000"}
+            src={s.google_maps_embed || `https://www.google.com/maps?q=${encodeURIComponent(s.address || "Mumbai fish market")}&output=embed`}
             width="100%"
             height="100%"
             style={{ border: 0, minHeight: 380 }}
