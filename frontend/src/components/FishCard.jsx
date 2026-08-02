@@ -1,11 +1,10 @@
 import { Fish as FishIcon, Sparkles } from "lucide-react";
+import { resolveImageSrc } from "@/lib/image";
 
 const FALLBACK_IMG = "https://images.pexels.com/photos/19993434/pexels-photo-19993434.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940";
 
 export default function FishCard({ fish, index = 0 }) {
-  const img = fish.image_base64
-    ? (fish.image_base64.startsWith("data:") ? fish.image_base64 : `data:image/jpeg;base64,${fish.image_base64}`)
-    : FALLBACK_IMG;
+  const img = resolveImageSrc(fish.image_base64) || FALLBACK_IMG;
 
   return (
     <article

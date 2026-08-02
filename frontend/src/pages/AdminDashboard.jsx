@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, formatApiErrorDetail } from "@/lib/api";
+import { resolveImageSrc, normalizeImageUrl } from "@/lib/image";
 import { useAuth } from "@/context/AuthContext";
 import {
   Fish, LogOut, Plus, Pencil, Trash2, Upload, Save, X,
@@ -214,7 +215,7 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3">
                         <div className="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center">
                           {f.image_base64 ? (
-                            <img src={f.image_base64.startsWith("data:") ? f.image_base64 : `data:image/jpeg;base64,${f.image_base64}`}
+                            <img src={resolveImageSrc(f.image_base64)}
                               alt={f.name_en} className="w-full h-full object-cover" />
                           ) : <ImageIcon className="w-5 h-5 text-slate-400" />}
                         </div>
@@ -259,7 +260,7 @@ export default function AdminDashboard() {
                   <div className="flex items-start gap-3">
                     <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center shrink-0">
                       {f.image_base64 ? (
-                        <img src={f.image_base64.startsWith("data:") ? f.image_base64 : `data:image/jpeg;base64,${f.image_base64}`}
+                        <img src={resolveImageSrc(f.image_base64)}
                           alt={f.name_en} className="w-full h-full object-cover" />
                       ) : <ImageIcon className="w-5 h-5 text-slate-400" />}
                     </div>
@@ -563,9 +564,24 @@ export default function AdminDashboard() {
                     <input type="file" accept="image/*" onChange={onImageFile} data-testid="form-image" className="hidden" />
                   </label>
                   {editing.image_base64 ? (
-                    <img src={editing.image_base64.startsWith("data:") ? editing.image_base64 : `data:image/jpeg;base64,${editing.image_base64}`}
+                    <img src={resolveImageSrc(editing.image_base64)}
                       alt="preview" className="w-14 h-14 rounded-lg object-cover border border-slate-200" />
                   ) : <span className="text-xs text-slate-400">No image chosen</span>}
+                </div>
+                <div className="mt-3">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Or paste an image URL / Google Drive link
+                  </label>
+                  <input
+                    type="url"
+                    value={editing.image_base64 && !editing.image_base64.startsWith("data:") ? editing.image_base64 : ""}
+                    onChange={(e) => setEditing({ ...editing, image_base64: e.target.value })}
+                    onBlur={(e) => setEditing((prev) => ({ ...prev, image_base64: normalizeImageUrl(e.target.value) }))}
+                    placeholder="https://drive.google.com/file/d/.../view or any image URL"
+                    data-testid="form-image-url"
+                    className="mt-1 w-full rounded-lg border border-slate-200 focus:border-ocean-500 focus:ring-2 focus:ring-ocean-500/20 outline-none px-4 py-2.5"
+                  />
+                  <p className="mt-1 text-xs text-slate-400">Drive file must be shared as "Anyone with the link".</p>
                 </div>
               </div>
             </div>
