@@ -430,28 +430,6 @@ async def startup_event():
         if status_backfill:
             await db.shop_meta.update_one({"_id": "shop_status"}, {"$set": status_backfill})
 
-    # Seed sample fish if empty
-    if await db.fish.count_documents({}) == 0:
-        samples = [
-            {"name_en": "Pomfret", "name_mr": "पापलेट", "price_per_kg": 850, "available": True,
-             "description": "Fresh silver pomfret, catch of the day.", "is_special": True},
-            {"name_en": "Rohu", "name_mr": "रोहू", "price_per_kg": 320, "available": True,
-             "description": "Freshwater rohu, ideal for curry.", "is_special": False},
-            {"name_en": "Surmai (King Fish)", "name_mr": "सुरमई", "price_per_kg": 950, "available": True,
-             "description": "Boneless king fish steaks.", "is_special": True},
-            {"name_en": "Bangda (Mackerel)", "name_mr": "बांगडा", "price_per_kg": 280, "available": True,
-             "description": "Coastal mackerel, perfect fry.", "is_special": False},
-            {"name_en": "Bombil (Bombay Duck)", "name_mr": "बोंबील", "price_per_kg": 400, "available": False,
-             "description": "Dried and fresh bombil available.", "is_special": False},
-            {"name_en": "Prawns", "name_mr": "कोळंबी", "price_per_kg": 720, "available": True,
-             "description": "Medium-large fresh prawns.", "is_special": True},
-        ]
-        now = datetime.now(timezone.utc).isoformat()
-        for s in samples:
-            s["created_at"] = now
-            s["image_base64"] = None
-        await db.fish.insert_many(samples)
-        logger.info("Seeded sample fish")
 
 
 @app.on_event("shutdown")
