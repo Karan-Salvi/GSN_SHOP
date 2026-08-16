@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
-const empty = { name_en: "", name_mr: "", price_per_kg: 0, available: true, is_special: false, description: "", image_base64: "" };
+const empty = { name_en: "", name_mr: "", price_per_kg: "", available: true, is_special: false, description: "", image_base64: "" };
 const emptyCreds = { current_password: "", new_email: "", new_password: "", confirm_password: "" };
 
 export default function AdminDashboard() {
@@ -53,7 +53,10 @@ export default function AdminDashboard() {
     e.preventDefault();
     setSaving(true);
     try {
-      const payload = { ...editing, price_per_kg: Number(editing.price_per_kg) };
+      const payload = {
+        ...editing,
+        price_per_kg: editing.price_per_kg === "" || editing.price_per_kg == null ? null : Number(editing.price_per_kg),
+      };
       if (editing.id) await api.put(`/admin/fish/${editing.id}`, payload);
       else await api.post("/admin/fish", payload);
       toast.success(editing.id ? "Fish updated" : "Fish added");
@@ -224,7 +227,9 @@ export default function AdminDashboard() {
                         <div className="font-semibold text-slate-900">{f.name_en}</div>
                         <div className="mr-text text-ocean-600">{f.name_mr}</div>
                       </td>
-                      <td className="px-4 py-3 font-num text-lg text-slate-900">₹{Math.round(f.price_per_kg)}</td>
+                      <td className="px-4 py-3 font-num text-lg text-slate-900">
+                        {f.price_per_kg != null ? `₹${Math.round(f.price_per_kg)}` : <span className="text-sm text-slate-400 font-medium">Price not listed</span>}
+                      </td>
                       <td className="px-4 py-3">
                         <button onClick={() => toggleAvailable(f)} data-testid={`toggle-avail-${f.id}`}
                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${f.available ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" : "bg-red-100 text-red-700 hover:bg-red-200"}`}>
@@ -267,7 +272,13 @@ export default function AdminDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-slate-900 truncate">{f.name_en}</div>
                       <div className="mr-text text-ocean-600 truncate">{f.name_mr}</div>
-                      <div className="font-num text-lg text-slate-900 mt-1">₹{Math.round(f.price_per_kg)}<span className="text-xs text-slate-500">/kg</span></div>
+                      <div className="font-num text-lg text-slate-900 mt-1">
+                        {f.price_per_kg != null ? (
+                          <>₹{Math.round(f.price_per_kg)}<span className="text-xs text-slate-500">/kg</span></>
+                        ) : (
+                          <span className="text-sm text-slate-400 font-medium">Price not listed</span>
+                        )}
+                      </div>
                     </div>
                     <button onClick={() => toggleAvailable(f)} data-testid={`toggle-avail-${f.id}`}
                       className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${f.available ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
@@ -534,8 +545,8 @@ export default function AdminDashboard() {
                 <Field label="Name (English)" testId="form-name-en" value={editing.name_en} onChange={(v) => setEditing({ ...editing, name_en: v })} required />
                 <Field label="नाव (मराठी)" testId="form-name-mr" value={editing.name_mr} onChange={(v) => setEditing({ ...editing, name_mr: v })} required />
               </div>
-              <Field type="number" label="Price per kg (₹)" testId="form-price" value={editing.price_per_kg}
-                onChange={(v) => setEditing({ ...editing, price_per_kg: v })} required />
+              <Field type="number" label="Price per kg (₹) — leave blank if not listed" testId="form-price" value={editing.price_per_kg}
+                onChange={(v) => setEditing({ ...editing, price_per_kg: v })} />
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Description</label>
                 <textarea rows={2} value={editing.description || ""} data-testid="form-description"

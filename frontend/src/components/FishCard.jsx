@@ -51,8 +51,16 @@ export default function FishCard({ fish, index = 0 }) {
           <div>
             <div className="text-[11px] uppercase tracking-widest text-slate-400">Price · दर</div>
             <div className="font-num text-2xl font-bold text-slate-900 leading-none">
-              ₹<span data-testid={`fish-price-${fish.id}`}>{Math.round(fish.price_per_kg)}</span>
-              <span className="text-sm text-slate-500 font-medium">/kg</span>
+              {fish.price_per_kg != null ? (
+                <>
+                  ₹<span data-testid={`fish-price-${fish.id}`}>{Math.round(fish.price_per_kg)}</span>
+                  <span className="text-sm text-slate-500 font-medium">/kg</span>
+                </>
+              ) : (
+                <span data-testid={`fish-price-${fish.id}`} className="text-base text-slate-400 font-semibold">
+                  Price not listed
+                </span>
+              )}
             </div>
           </div>
         </div>

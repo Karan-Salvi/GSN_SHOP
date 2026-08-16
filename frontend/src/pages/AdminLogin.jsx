@@ -5,7 +5,7 @@ import { Fish, Loader2, LogIn } from "lucide-react";
 
 export default function AdminLogin() {
   const { login, user } = useAuth();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("narvekar@gsn.com");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);

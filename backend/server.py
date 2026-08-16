@@ -126,7 +126,7 @@ class UserOut(BaseModel):
 class FishIn(BaseModel):
     name_en: str
     name_mr: str
-    price_per_kg: float
+    price_per_kg: Optional[float] = None
     available: bool = True
     image_base64: Optional[str] = None
     description: Optional[str] = ""
@@ -170,16 +170,17 @@ class SettingsIn(BaseModel):
 
 # --- Fish helpers ---
 def fish_doc_to_out(doc: dict) -> dict:
+    created = doc.get("created_at") or datetime.now(timezone.utc)
     return {
         "id": str(doc["_id"]),
         "name_en": doc.get("name_en", ""),
         "name_mr": doc.get("name_mr", ""),
-        "price_per_kg": float(doc.get("price_per_kg", 0)),
+        "price_per_kg": doc.get("price_per_kg"),
         "available": bool(doc.get("available", True)),
         "image_base64": doc.get("image_base64"),
         "description": doc.get("description", ""),
         "is_special": bool(doc.get("is_special", False)),
-        "created_at": doc.get("created_at", datetime.now(timezone.utc).isoformat()),
+        "created_at": created.isoformat() if hasattr(created, "isoformat") else created,
     }
 
 
@@ -328,7 +329,7 @@ async def get_settings():
 @api_router.post("/admin/fish")
 async def create_fish(body: FishIn, user: dict = Depends(get_current_user)):
     doc = body.model_dump()
-    doc["created_at"] = datetime.now(timezone.utc).isoformat()
+    doc["created_at"] = datetime.now(timezone.utc)
     res = await db.fish.insert_one(doc)
     doc["_id"] = res.inserted_id
     return fish_doc_to_out(doc)
@@ -391,6 +392,9 @@ async def update_settings(body: SettingsIn, user: dict = Depends(get_current_use
 # --- Startup ---
 @app.on_event("startup")
 async def startup_event():
+    # Auto-remove fish 12 hours after creation (Mongo TTL index; ignores pre-existing string-typed created_at)
+    await db.fish.create_index("created_at", expireAfterSeconds=12 * 3600)
+
     # Seed admin (only creates the initial admin; never overwrites a manually-changed password)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@gsnfish.com").lower()
     admin_password = os.environ.get("ADMIN_PASSWORD", "Admin@123")
