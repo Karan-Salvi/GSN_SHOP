@@ -24,7 +24,7 @@ export default function Home() {
           api.get("/settings"),
         ]);
         if (!mounted) return;
-        setFish(fRes.data || []);
+        setFish((fRes.data || []).filter((f) => f.available));
         setStatus(sRes.data || { is_open: true, notice: "" });
         setSettings(cRes.data || {});
       } catch (e) {

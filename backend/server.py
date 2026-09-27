@@ -392,8 +392,11 @@ async def update_settings(body: SettingsIn, user: dict = Depends(get_current_use
 # --- Startup ---
 @app.on_event("startup")
 async def startup_event():
-    # Auto-remove fish 12 hours after creation (Mongo TTL index; ignores pre-existing string-typed created_at)
-    await db.fish.create_index("created_at", expireAfterSeconds=12 * 3600)
+    # Drop legacy TTL index that auto-removed fish 12 hours after creation
+    try:
+        await db.fish.drop_index("created_at_1")
+    except Exception:
+        pass
 
     # Seed admin (only creates the initial admin; never overwrites a manually-changed password)
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@gsnfish.com").lower()
