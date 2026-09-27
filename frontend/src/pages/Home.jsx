@@ -41,6 +41,7 @@ export default function Home() {
         if (!mounted) return;
         const fishData = Array.isArray(fRes.data) ? fRes.data : [];
         const nextRaw = JSON.stringify(fishData);
+        setFish(fishData.filter((f) => f.available));
         if (nextRaw !== lastRaw) {
           lastRaw = nextRaw;
           try {
@@ -48,7 +49,6 @@ export default function Home() {
           } catch {
             // storage unavailable/full — skip caching, still update UI
           }
-          setFish(fishData.filter((f) => f.available));
         }
         setStatus(sRes.data || { is_open: true, notice: "" });
         setSettings(cRes.data || {});
