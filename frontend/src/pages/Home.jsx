@@ -8,14 +8,29 @@ import Footer from "@/components/Footer";
 import FloatingButtons from "@/components/FloatingButtons";
 import InstallPWA from "@/components/InstallPWA";
 
+const FISH_CACHE_KEY = "gsn_fish_cache";
+
+function readFishCache() {
+  try {
+    const raw = localStorage.getItem(FISH_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
-  const [fish, setFish] = useState([]);
+  const cached = readFishCache();
+  const [fish, setFish] = useState(() => (cached || []).filter((f) => f.available));
   const [status, setStatus] = useState({ is_open: true, notice: "" });
   const [settings, setSettings] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
 
   useEffect(() => {
     let mounted = true;
+    let lastRaw = cached ? JSON.stringify(cached) : null;
     async function load() {
       try {
         const [fRes, sRes, cRes] = await Promise.all([
@@ -24,7 +39,17 @@ export default function Home() {
           api.get("/settings"),
         ]);
         if (!mounted) return;
-        setFish((fRes.data || []).filter((f) => f.available));
+        const fishData = Array.isArray(fRes.data) ? fRes.data : [];
+        const nextRaw = JSON.stringify(fishData);
+        if (nextRaw !== lastRaw) {
+          lastRaw = nextRaw;
+          try {
+            localStorage.setItem(FISH_CACHE_KEY, nextRaw);
+          } catch {
+            // storage unavailable/full — skip caching, still update UI
+          }
+          setFish(fishData.filter((f) => f.available));
+        }
         setStatus(sRes.data || { is_open: true, notice: "" });
         setSettings(cRes.data || {});
       } catch (e) {
