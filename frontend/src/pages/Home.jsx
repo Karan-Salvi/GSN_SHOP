@@ -22,7 +22,7 @@ function readFishCache() {
 }
 
 export default function Home() {
-  const cached = readFishCache();
+  const [cached] = useState(readFishCache);
   const [fish, setFish] = useState(() => (cached || []).filter((f) => f.available));
   const [status, setStatus] = useState({ is_open: true, notice: "" });
   const [settings, setSettings] = useState({});
@@ -30,7 +30,12 @@ export default function Home() {
 
   useEffect(() => {
     let mounted = true;
-    let lastRaw = cached ? JSON.stringify(cached) : null;
+    let lastRaw = null;
+    try {
+      lastRaw = localStorage.getItem(FISH_CACHE_KEY);
+    } catch {
+      // storage unavailable — treat as no cache
+    }
     async function load() {
       try {
         const [fRes, sRes, cRes] = await Promise.all([
